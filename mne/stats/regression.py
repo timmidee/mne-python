@@ -400,5 +400,5 @@ def _make_evokeds(coefs, conds, cond_length, tmin_s, tmax_s, info):
             coefs[:, cumul:cumul + tmax_ - tmin_], info=info, comment=cond,
             tmin=tmin_ / float(info["sfreq"]), nave=cond_length[cond],
             kind='average')  # nave and kind are technically incorrect
-        cumul += tmax_ - tmin_
+        cumul += tmax_ - tmin_  # ... for now!
     return evokeds
