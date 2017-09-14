@@ -287,7 +287,7 @@ def linear_regression_raw(raw, events, event_id=None, tmin=-.1, tmax=1,
     evokeds = _make_evokeds(coefs, conds, cond_length, tmin_s, tmax_s, info)
     
     # adjust evoked.nave to reflect number of predictor instances after _clean_rerp_input 
-    evokeds = _fix_evoked_nave(evokeds, has_val, events, event_id=None, covariates=None)
+    evokeds = _fix_evoked_nave(evokeds, has_val, events, event_id=event_id, covariates=covariates)
 
     return evokeds
 
