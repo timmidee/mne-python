@@ -274,7 +274,7 @@ def linear_regression_raw(raw, events, event_id=None, tmin=-.1, tmax=1,
         event_id=event_id, tmin=tmin, tmax=tmax, covariates=covariates)
 
     # remove "empty" and contaminated data points
-    X, data = _clean_rerp_input(X, data, reject, flat, decim, info, tstep)
+    X, data, has_val = _clean_rerp_input(X, data, reject, flat, decim, info, tstep)
 
     # solve linear system
     coefs = solver(X, data.T)
@@ -285,6 +285,9 @@ def linear_regression_raw(raw, events, event_id=None, tmin=-.1, tmax=1,
 
     # construct Evoked objects to be returned from output
     evokeds = _make_evokeds(coefs, conds, cond_length, tmin_s, tmax_s, info)
+    
+    # adjust evoked.nave to reflect number of predictor instances after _clean_rerp_input 
+    evokeds = _fix_evoked_nave(evokeds, has_val, events, event_id=None, covariates=None)
 
     return evokeds
 
@@ -384,7 +387,7 @@ def _clean_rerp_input(X, data, reject, flat, decim, info, tstep):
         for t0, t1 in inds:
             has_val = np.setdiff1d(has_val, range(t0, t1))
 
-    return X.tocsr()[has_val], data[:, has_val]
+    return X.tocsr()[has_val], data[:, has_val],has_val
 
 
 def _make_evokeds(coefs, conds, cond_length, tmin_s, tmax_s, info):
@@ -402,3 +405,23 @@ def _make_evokeds(coefs, conds, cond_length, tmin_s, tmax_s, info):
             kind='average')  # nave and kind are technically incorrect
         cumul += tmax_ - tmin_  # ... for now!
     return evokeds
+
+def _fix_evokeds_nave(evokeds,has_val, events, event_id=None, covariates=None):
+    conds = list(event_id)
+    if covariates is not None:
+        conds += list(covariates)
+    cond_length = dict()
+    for cond in conds:
+        covs = covariates[cond]
+        if len(covs) != len(events): 
+            error = ("Condition {0} from ```covariates``` is "
+                     "not the same length as ```events```").format(cond)
+            raise ValueError(error)
+        # compare onset samples of events/covariates to non-zero indices in has_val
+        onsets = events[np.where(covs != 0), 0][0]
+        keep = np.where(has_val)
+        # only keep onsets on samples that were not removed before solving
+        onsets = onsets[np.isin(onsets,keep)] # isin() requires numpy 0.13
+        evokeds[cond].nave = len(onsets)
+    return evokeds
+    
