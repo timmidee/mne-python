@@ -286,7 +286,7 @@ def linear_regression_raw(raw, events, event_id=None, tmin=-.1, tmax=1,
     # construct Evoked objects to be returned from output
     evokeds = _make_evokeds(coefs, conds, cond_length, tmin_s, tmax_s, info)
     
-    # adjust evoked.nave to reflect number of predictor instances after _clean_rerp_input 
+    # adjust evoked.nave to reflect number of predictor occurences after _clean_rerp_input 
     evokeds = _fix_evoked_nave(evokeds, has_val, events, event_id=event_id, covariates=covariates)
 
     return evokeds
@@ -424,8 +424,8 @@ def _fix_evokeds_nave(evokeds,has_val, events, event_id=None, covariates=None):
         onsets = onsets[np.isin(onsets,keep)] # isin() requires numpy 0.13
         evokeds[cond].nave = len(onsets)
 	# This is still not 100% correct because data and predictors are cleaned 
-        # after expanding the predictors. The predictors may therefore occur a different 
+	# after expanding the predictors. The predictors may therefore occur a different 
 	# number of times for different lags in the predictor matrix. 
-        # This is meant as a close approximation.
+	# This is meant as a close approximation.
     return evokeds
     
