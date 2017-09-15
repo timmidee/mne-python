@@ -410,7 +410,6 @@ def _fix_evokeds_nave(evokeds,has_val, events, event_id=None, covariates=None):
     conds = list(event_id)
     if covariates is not None:
         conds += list(covariates)
-    cond_length = dict()
     for cond in conds:
         covs = covariates[cond]
         if len(covs) != len(events): 
